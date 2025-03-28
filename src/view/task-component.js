@@ -1,21 +1,16 @@
 import { createElement } from '../framework/render.js';
 
-/**
- * @param {string} taskName - текст задачи
- */
-function createTaskTemplate(taskName) {
-  return (
-    `<li class="task-item">${taskName}</li>`
-  );
-}
+const createTaskTemplate = (task) => (
+  `<li class="task-item" data-id="${task.id}">${task.title}</li>`
+);
 
 export default class TaskComponent {
-  constructor(taskName) {
-    this.taskName = taskName;
+  constructor(task) {
+    this.task = task;
   }
 
   getTemplate() {
-    return createTaskTemplate(this.taskName);
+    return createTaskTemplate(this.task);
   }
 
   getElement() {
