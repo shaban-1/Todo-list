@@ -1,8 +1,10 @@
 import { createElement } from '../framework/render.js';
 
-const createClearButtonTemplate = () => (
-    `<button class="clear-btn" id="clearTasksBtn">x Очистить</button>`
-);
+function createClearButtonTemplate() {
+    return (
+        `<button class="clear-btn" id="clearTasksBtn">x Очистить</button>`
+    );
+}
 
 export default class ClearTrashButtonComponent {
     constructor(onClear) {

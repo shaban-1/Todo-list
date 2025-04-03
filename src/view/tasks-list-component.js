@@ -1,10 +1,12 @@
 import { createElement } from '../framework/render.js';
 
-const createTasksListTemplate = (title, categoryClass) => (
-  `<ul class="task-category ${categoryClass}">
+function createTasksListTemplate(title, categoryClass) {
+  return (
+    `<ul class="task-category ${categoryClass}">
       <h3 class="category-title">${title}</h3>
-   </ul>`
-);
+    </ul>`
+  );
+}
 
 export default class TasksListComponent {
   constructor(title, categoryClass) {

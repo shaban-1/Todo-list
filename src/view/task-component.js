@@ -1,8 +1,10 @@
 import { createElement } from '../framework/render.js';
 
-const createTaskTemplate = (task) => (
-  `<li class="task-item" data-id="${task.id}">${task.title}</li>`
-);
+function createTaskTemplate(task) {
+  return(
+    `<li class="task-item" data-id="${task.id}">${task.title}</li>`
+  );
+}
 
 export default class TaskComponent {
   constructor(task) {
