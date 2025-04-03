@@ -3,24 +3,28 @@ import TaskComponent from '../view/task-component.js';
 import ClearTrashButtonComponent from '../view/task-button-component.js';
 import TaskModel from '../model/task-model.js';
 import { render, RenderPosition } from '../framework/render.js';
-import { STATUS_NAMES } from '../const.js';
+import { STATUS_NAMES, STATAUS_LABEL } from '../const.js';
 
 export default class TasksBoardPresenter {
-    constructor(boardComponent) {
-        this.boardComponent = boardComponent;
-        this.taskModel = new TaskModel();
-        this.taskLists = {};
+    #boardComponent = null;
+    #taskModel = null;
+    #taskLists = {};
+
+    constructor({ boardComponent, taskModel }) {
+        this.#boardComponent = boardComponent;
+        this.#taskModel = taskModel;
     }
 
     init() {
-        const tasks = this.taskModel.tasks;
-        const statusValues = Object.keys(STATUS_NAMES);
+        const tasks = [...this.#taskModel.tasks];
+        const statusValues = Object.values(STATUS_NAMES);
 
         for (let i = 0; i < statusValues.length; i++) {
             const status = statusValues[i];
-            const tasksListComponent = new TasksListComponent(STATUS_NAMES[status], status);
-            render(tasksListComponent, this.boardComponent.getElement());
-            this.taskLists[status] = tasksListComponent;
+            const statusTitle = STATAUS_LABEL[status];
+            const tasksListComponent = new TasksListComponent(statusTitle, status);
+            render(tasksListComponent, this.#boardComponent.getElement());
+            this.#taskLists[status] = tasksListComponent;
 
             for (let j = 0; j < tasks.length; j++) {
                 if (tasks[j].status === status) {
@@ -29,7 +33,7 @@ export default class TasksBoardPresenter {
                 }
             }
 
-            if (status === 'discarded') {
+            if (status === STATUS_NAMES.DISCARDED) {
                 const clearButton = new ClearTrashButtonComponent();
                 render(clearButton, tasksListComponent.getElement());
             }
