@@ -18,9 +18,6 @@ export default class ClearTrashButtonComponent {
     getElement() {
         if (!this.element) {
             this.element = createElement(this.getTemplate());
-            if (this.onClear) {
-                this.element.addEventListener('click', this.onClear);
-            }
         }
         return this.element;
     }

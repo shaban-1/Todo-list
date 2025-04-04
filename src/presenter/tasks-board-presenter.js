@@ -28,14 +28,12 @@ export default class TasksBoardPresenter {
 
             for (let j = 0; j < tasks.length; j++) {
                 if (tasks[j].status === status) {
-                    const taskComponent = new TaskComponent(tasks[j]);
-                    render(taskComponent, tasksListComponent.getElement());
+                    render(new TaskComponent(tasks[j]), tasksListComponent.getElement());
                 }
             }
 
             if (status === STATUS_NAMES.DISCARDED) {
-                const clearButton = new ClearTrashButtonComponent();
-                render(clearButton, tasksListComponent.getElement());
+                render(new ClearTrashButtonComponent(), tasksListComponent.getElement());
             }
         }
     }
