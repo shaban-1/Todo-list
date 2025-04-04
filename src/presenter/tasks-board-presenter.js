@@ -3,38 +3,51 @@ import TaskComponent from '../view/task-component.js';
 import ClearTrashButtonComponent from '../view/task-button-component.js';
 import TaskModel from '../model/task-model.js';
 import { render, RenderPosition } from '../framework/render.js';
-import { STATUS_NAMES, STATAUS_LABEL } from '../const.js';
+import { STATUS_NAMES, STATUS_LABEL } from '../const.js';
+import EmptyTasksComponent from '../view/empty-tasks-component.js';
 
 export default class TasksBoardPresenter {
-    #boardComponent = null;
-    #taskModel = null;
-    #taskLists = {};
+	#boardComponent;
+	#taskModel;
+	#taskLists = {};
 
-    constructor({ boardComponent, taskModel }) {
-        this.#boardComponent = boardComponent;
-        this.#taskModel = taskModel;
-    }
+	constructor({ boardComponent, taskModel }) {
+		this.#boardComponent = boardComponent;
+		this.#taskModel = taskModel;
+	}
 
-    init() {
-        const tasks = [...this.#taskModel.tasks];
-        const statusValues = Object.values(STATUS_NAMES);
+	init() {
+		const statusValues = Object.values(STATUS_NAMES);
+		statusValues.forEach((status) => this.#renderTasksList(status));
+	}
 
-        for (let i = 0; i < statusValues.length; i++) {
-            const status = statusValues[i];
-            const statusTitle = STATAUS_LABEL[status];
-            const tasksListComponent = new TasksListComponent(statusTitle, status);
-            render(tasksListComponent, this.#boardComponent.getElement());
-            this.#taskLists[status] = tasksListComponent;
+	#renderTasksList(status) {
+		const statusTitle = STATUS_LABEL[status];
+		const tasksListComponent = new TasksListComponent(statusTitle, status);
+		render(tasksListComponent, this.#boardComponent.element);
+		this.#taskLists[status] = tasksListComponent;
 
-            for (let j = 0; j < tasks.length; j++) {
-                if (tasks[j].status === status) {
-                    render(new TaskComponent(tasks[j]), tasksListComponent.getElement());
-                }
-            }
+		const tasks = this.#taskModel.tasks.filter((task) => task.status === status);
 
-            if (status === STATUS_NAMES.DISCARDED) {
-                render(new ClearTrashButtonComponent(), tasksListComponent.getElement());
-            }
-        }
-    }
+		if (tasks.length === 0) {
+			this.#renderEmptyTask(tasksListComponent);
+		} else {
+			tasks.forEach((task) => this.#renderTask(task, tasksListComponent));
+			if (status === STATUS_NAMES.DISCARDED) {
+				this.#renderTrashButton(tasksListComponent);
+			}
+		}
+	}
+
+	#renderTask(task, container) {
+		render(new TaskComponent(task), container.element);
+	}
+
+	#renderEmptyTask(container) {
+		render(new EmptyTasksComponent(), container.element);
+	}
+
+	#renderTrashButton(container) {
+		render(new ClearTrashButtonComponent(), container.element);
+	}
 }

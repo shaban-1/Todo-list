@@ -5,11 +5,11 @@ const STATUS_NAMES = {
     DISCARDED: `discarded`
 };
 
-const STATAUS_LABEL = {
+const STATUS_LABEL = {
     [STATUS_NAMES.PENDING]: `Бэклог`,
     [STATUS_NAMES.INPROGRESS]: `В процессе`,
     [STATUS_NAMES.COMPLETED]: `Готово`,
     [STATUS_NAMES.DISCARDED]: `Корзина`
 };
 
-export {STATUS_NAMES, STATAUS_LABEL};
+export {STATUS_NAMES, STATUS_LABEL};
