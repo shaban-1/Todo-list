@@ -17,8 +17,12 @@ export default class TasksBoardPresenter {
 	}
 
 	init() {
-		const statusValues = Object.values(STATUS_NAMES);
-		statusValues.forEach((status) => this.#renderTasksList(status));
+		this.#renderBoard();
+	}
+	
+	#renderBoard(){
+		this.#boardComponent.element.innerHTML = '';
+		Object.values(STATUS_NAMES).forEach(status => this.#renderTasksList(status));
 	}
 
 	#renderTasksList(status) {
@@ -40,14 +44,14 @@ export default class TasksBoardPresenter {
 	}
 
 	#renderTask(task, container) {
-		render(new TaskComponent(task), container.element);
+		render(new TaskComponent(task), container.element, RenderPosition.BEFOREEND);
 	}
 
 	#renderEmptyTask(container) {
-		render(new EmptyTasksComponent(), container.element);
+		render(new EmptyTasksComponent(), container.element, RenderPosition.BEFOREEND);
 	}
 
 	#renderTrashButton(container) {
-		render(new ClearTrashButtonComponent(), container.element);
+		render(new ClearTrashButtonComponent(), container.element, RenderPosition.BEFOREEND);
 	}
 }
