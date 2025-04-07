@@ -2,7 +2,7 @@ import { AbstractComponent } from "../framework/view/abstract-component.js";
 
 function createEmptyTasksTemplate() {
 	return(
-		`<li class="task-item empty-task"> Нет задач </li>`
+		`<li class="task-item empty-task"> Перетащите карточку </li>`
 	);
 }
 
