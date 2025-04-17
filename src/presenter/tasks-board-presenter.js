@@ -14,14 +14,24 @@ export default class TasksBoardPresenter {
 	constructor({ boardComponent, taskModel }) {
 		this.#boardComponent = boardComponent;
 		this.#taskModel = taskModel;
+		this.#taskModel.addObserver(this.#handleModelChange.bind(this));
+	}
+
+	#handleModelChange() {
+		this.#clearBoard();
+		this.#renderBoard();
+	}
+
+	#clearBoard(){
+		this.#boardComponent.element.innerHTML = '';
 	}
 
 	init() {
+		this.#clearBoard();
 		this.#renderBoard();
 	}
 	
 	#renderBoard(){
-		this.#boardComponent.element.innerHTML = '';
 		Object.values(STATUS_NAMES).forEach(status => this.#renderTasksList(status));
 	}
 
@@ -31,7 +41,7 @@ export default class TasksBoardPresenter {
 		render(tasksListComponent, this.#boardComponent.element);
 		this.#taskLists[status] = tasksListComponent;
 
-		const tasks = this.#taskModel.tasks.filter((task) => task.status === status);
+		const tasks = this.#taskModel.getTasksByStatus(status);
 
 		if (tasks.length === 0) {
 			this.#renderEmptyTask(tasksListComponent);
@@ -43,15 +53,30 @@ export default class TasksBoardPresenter {
 		}
 	}
 
+	createTask() {
+		const taskTitle = document.querySelector('#add-task').value.trim();
+		if (!taskTitle){
+			return
+		}
+		this.#taskModel.addTask(taskTitle);
+
+		document.querySelector('#add-task').value = '';
+	}
+
 	#renderTask(task, container) {
 		render(new TaskComponent(task), container.element, RenderPosition.BEFOREEND);
 	}
 
-	#renderEmptyTask(container) {
-		render(new EmptyTasksComponent(), container.element, RenderPosition.BEFOREEND);
+	#renderTrashButton(container) {
+		render(new ClearTrashButtonComponent({onClick: () => this.#handleClearTrash()}), container.element, RenderPosition.BEFOREEND);
+	}
+	
+	#handleClearTrash() {
+		const trashTasks = this.#taskModel.tasks.filter(task => task.status === STATUS_NAMES.DISCARDED);
+		trashTasks.forEach(task => this.#taskModel.removeTask(task.id));
 	}
 
-	#renderTrashButton(container) {
-		render(new ClearTrashButtonComponent(), container.element, RenderPosition.BEFOREEND);
+	#renderEmptyTask(container) {
+		render(new EmptyTasksComponent(), container.element, RenderPosition.BEFOREEND);
 	}
 }
