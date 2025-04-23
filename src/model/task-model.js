@@ -24,6 +24,39 @@ export default class TaskModel {
 		this._notifyObservers();
 		return newTask;
 	}
+
+	updateTaskStatus(taskId, newStatus, newIndex = null) {
+		const id = String(taskId);
+		const oldIndex = this.#boardtasks.findIndex(t => String(t.id) === id);
+		if (oldIndex === -1) return;
+
+		const [ task ] = this.#boardtasks.splice(oldIndex, 1);
+		task.status = newStatus;
+
+		if (newIndex === null) {
+			this.#boardtasks.push(task);
+		} else {
+			const statusIndices = this.#boardtasks
+				.map((t, idx) => t.status === newStatus ? idx : -1)
+				.filter(idx => idx !== -1);
+
+			let insertIndex;
+
+			if (newIndex >= statusIndices.length) {
+				insertIndex = statusIndices[statusIndices.length - 1] + 1;
+			} else {
+				insertIndex = statusIndices[newIndex];
+			}
+
+			if (statusIndices.length === 0) {
+				insertIndex = this.#boardtasks.length;
+			}
+
+			this.#boardtasks.splice(insertIndex, 0, task);
+		}
+
+		this._notifyObservers();
+	}
 	
 	removeTask(taskId){
 		this.#boardtasks = this.#boardtasks.filter(task => task.id !== taskId);
