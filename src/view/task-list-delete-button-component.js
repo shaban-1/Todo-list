@@ -13,7 +13,11 @@ export default class ClearTrashButtonComponent extends AbstractComponent {
 		super();
 		this.#onClear = onClick;
 		this.element.addEventListener('click', this.#clickHandler);
-	}	
+	}
+		
+	toggleDisabled(isDisabled) {
+		this.element.disabled = isDisabled;
+	}
 
 	get template() {
 		return createClearButtonTemplate();

@@ -1,77 +1,108 @@
-import { tasks } from '../mock/task.js';
-import { STATUS_NAMES } from '../const.js';
+import Observable from '../framework/observable.js';
+import { STATUS_NAMES, USER_ACTION, UPDATE_TYPE } from '../const.js';
 import { generateID } from '../utils.js';
 
-export default class TaskModel {
-	#boardtasks = tasks;
-	#observers = [];
+export default class TaskModel extends Observable {
+	#tasksApiService = null;
+	#tasks = [];
+
+	constructor({ tasksApiService }) {
+		super();
+		this.#tasksApiService = tasksApiService;
+	}
 
 	get tasks() {
-		return this.#boardtasks;
+		return this.#tasks;
 	}
 
-	getTasksByStatus(status) {
-		return this.#boardtasks.filter(task => task.status === status);
+	async init() {
+		try {
+			const tasks = await this.#tasksApiService.tasks;
+			this.#tasks = tasks;
+		} catch (err) {
+			this.#tasks = [];
+		}
+		this._notify(UPDATE_TYPE.INIT);
 	}
 
-	addTask(title) {
+	async addTask(title) {
 		const newTask = {
 			id: generateID(),
 			title,
 			status: STATUS_NAMES.PENDING
 		};
-		this.#boardtasks.push(newTask);
-		this._notifyObservers();
-		return newTask;
+		try {
+			const createdTask = await this.#tasksApiService.addTask(newTask);
+			this.#tasks.push(createdTask);
+			this._notify(USER_ACTION.ADD_TASK, createdTask);
+			return createdTask;
+		} catch (err) {
+			throw err;
+		}
 	}
 
-	updateTaskStatus(taskId, newStatus, newIndex = null) {
+	async updateTaskStatus(taskId, newStatus, newIndex = null) {
 		const id = String(taskId);
-		const oldIndex = this.#boardtasks.findIndex(t => String(t.id) === id);
+		const oldIndex = this.#tasks.findIndex(t => String(t.id) === id);
 		if (oldIndex === -1) return;
 
-		const [ task ] = this.#boardtasks.splice(oldIndex, 1);
+		const [task] = this.#tasks.splice(oldIndex, 1);
+		const previousStatus = task.status;
 		task.status = newStatus;
 
 		if (newIndex === null) {
-			this.#boardtasks.push(task);
+			this.#tasks.push(task);
 		} else {
-			const statusIndices = this.#boardtasks
-				.map((t, idx) => t.status === newStatus ? idx : -1)
-				.filter(idx => idx !== -1);
+			const statusIndices = this.#tasks
+			.map((t, idx) => t.status === newStatus ? idx : -1)
+			.filter(idx => idx !== -1);
 
 			let insertIndex;
-
-			if (newIndex >= statusIndices.length) {
-				insertIndex = statusIndices[statusIndices.length - 1] + 1;
+			if (statusIndices.length === 0 || newIndex >= statusIndices.length) {
+				insertIndex = this.#tasks.length;
 			} else {
 				insertIndex = statusIndices[newIndex];
 			}
 
-			if (statusIndices.length === 0) {
-				insertIndex = this.#boardtasks.length;
-			}
-
-			this.#boardtasks.splice(insertIndex, 0, task);
+			this.#tasks.splice(insertIndex, 0, task);
 		}
 
-		this._notifyObservers();
-	}
-	
-	removeTask(taskId){
-		this.#boardtasks = this.#boardtasks.filter(task => task.id !== taskId);
-		this._notifyObservers();
-	}
-
-	addObserver(observer){
-		this.#observers.push(observer);
-	}
-
-	removeObserver(observer){
-		this.#observers = this.#observers.filter((obs) => obs !== observer);
+		try {
+			const updatedTask = await this.#tasksApiService.updateTask(task);
+			Object.assign(task, updatedTask);
+			this._notify(USER_ACTION.UPDATE_TASK, task);
+		} catch (err) {
+			task.status = previousStatus;
+			this.#tasks.splice(oldIndex, 0, task);
+			throw err;
+		}
 	}
 
-	_notifyObservers(){
-		this.#observers.forEach((observer) => observer());
+
+
+	getTasksByStatus(status) {
+		return this.#tasks.filter(task => task.status === status);
+	}
+
+	async clearDiscardedTasks() {
+		const discardedTasks = this.#tasks.filter(t => t.status === STATUS_NAMES.DISCARDED);
+		if (discardedTasks.length === 0) {
+		  return;
+		}
+		try {
+		  await Promise.all(
+			discardedTasks.map(t => this.#tasksApiService.deleteTask(String(t.id)))
+		  );
+		  this.#tasks = this.#tasks.filter(t => t.status !== STATUS_NAMES.DISCARDED);
+		  this._notify(USER_ACTION.DELETE_TASK, { status: STATUS_NAMES.DISCARDED });
+		} catch (err) {
+		  console.error('Ошибка при очистке корзины:', err);
+		  throw err;
+		}
+	  }
+	  
+
+	hasDiscardedTasks() {
+		return this.#tasks.some(t => t.status === STATUS_NAMES.DISCARDED);
 	}
 }
