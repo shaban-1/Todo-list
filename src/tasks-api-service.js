@@ -36,7 +36,6 @@ export default class TasksApiService extends ApiService {
 			url: `tasks/${taskId}`,
 			method: Method.DELETE,
 		});
-		console.log(`Задача с id=${taskId} удалена`);
 	}
 
 	get tasks() {
