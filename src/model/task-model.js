@@ -72,6 +72,7 @@ export default class TaskModel extends Observable {
 			Object.assign(task, updatedTask);
 			this._notify(USER_ACTION.UPDATE_TASK, task);
 		} catch (err) {
+			console.error('Ошибка обновления задачи:', err);
 			task.status = previousStatus;
 			this.#tasks.splice(oldIndex, 0, task);
 			throw err;
